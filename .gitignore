@@ -1,0 +1,6 @@
+embedding/
+WashingtonPost*/
+vocab
+*.json
+.ipynb_checkpoints/
+
