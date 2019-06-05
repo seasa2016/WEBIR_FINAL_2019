@@ -1,6 +1,8 @@
-embedding/
+uembedding/
 WashingtonPost*/
 vocab
 *.json
 .ipynb_checkpoints/
-
+text/
+embedding/
+model/
