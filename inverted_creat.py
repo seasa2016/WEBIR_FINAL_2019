@@ -1,47 +1,84 @@
+"""
+this file is used for clean up data
+"""
+import os
+import sys
 import json
 import string
 from bs4 import BeautifulSoup
-def count(obj,total,index):
+import re
+
+mispell_dict = {'didnt':'did not',
+                'doesnt':'does not',
+                'isnt':'is not',
+                'shouldnt':'should not' ,
+                'wasnt': 'was not' ,
+                'hasnt': 'has not' ,
+                '‘i': 'i' ,
+                'theatre': 'theater' ,
+                'cancelled': 'canceled' ,
+                'organisation': 'organization' ,
+                'labour': 'labor' ,
+                'favourite': 'favorite' ,
+                'travelling': 'traveling' ,
+                'washingtons': 'washington' ,
+                'marylands': 'maryland' ,
+                'chinas': 'china' ,
+                'russias': 'russia' ,
+                '‘the': 'the' ,
+                'irans': 'iran' ,
+                'dulles': 'dulle' 
+                }
+
+def parse(text,vocab,total,index):
 	#build up inverted file
-	try:
-		for data in obj['contents']:
-			if(data is None):
-				continue
-			if('subtype' in data):
-				data['content'] = data['content'].lower()
-			
-				soup = BeautifulSoup(data['content'], 'html.parser')
-				qq = soup.text
-				temp = ''	
-				for w in qq:
-					if(w in string.punctuation):
-						temp += ' '
-					temp += w
-				
-					if(w in string.punctuation):
-						temp += ' '
-				local = {}
-				for w in temp.split():
-					if(len(w)):
-						try:
-							local[w] += 1
-						except:
-							local[w] = 1
-				for w in local:
-					try:
-						total[w]['docs'][index] += local[w]
-					except:
-						total[w] = {}
-						total[w]['docs'] = {index:local[w]}
-		return total
-	except Exception as e:
-		print(index,obj)
-		print(e)
+
+	for punct in "/-'":
+		text = text.replace(punct, '')
+	for punct in '?!.,"#$%\'()*+-/:;<=>@[\\]^_`{|}~' + '“”’‘':
+		text = text.replace(punct, '')
+	"""
+	if you want to parse number
+	text = str(key)
+	text = re.sub('[0-9]{5,}', '#####', text)
+	text = re.sub('[0-9]{4}', '####', text)
+	text = re.sub('[0-9]{3}', '###', text)
+	text = re.sub('[0-9]{2}', '##', text)
+	"""
+	for key,data in mispell_dict.items():
+		text = text.replace(key,data)
+	
+	for w in text.split():
+		try:
+			total[w]['docs'][index] += 1
+		except:
+			total[w] = {}
+			total[w]['docs'] = {index:1}
+
+		try:
+			vocab[w] += 1
+		except:
+			vocab[w] = 1
 
 total = {}
-with open('./WashingtonPost.v2/data/TREC_Washington_Post_collection.v2.jl', 'r') as f:
-	for i,line in enumerate(f):
-		obj = json.loads(line)
-		total = count(obj,total,i)
-with open('./invertedq.json', 'w') as f:
+vocab = {}
+mapping = []
+for name in os.listdir('./text/'):
+	with open(os.path.join('./text/',name), 'r') as f:
+		for i,line in enumerate(f):
+			obj = json.loads(line)
+			mapping.append((obj['id'],obj['article_url']))
+			parse(obj['text'],vocab,total,i)
+
+arr = [(key,data) for key,data in vocab.items()]
+arr = sorted(arr,key=lambda x:x[1],reverse=True)
+with open('./model/vocab') as f:
+	for data in arr:
+		f.write("{0}\t{1}\n".format(data[0],data[1]))
+
+with open('./model/mapping') as f:
+	for i,d in enumerate(mapping):
+		f.write("{0}\t{1}\t{2}\n".format(i,d[0],d[1]))
+
+with open('./model/inverted.json', 'w') as f:
 	f.write(json.dumps(total))
