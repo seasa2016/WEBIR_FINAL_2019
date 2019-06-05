@@ -29,7 +29,7 @@ def count(obj,total,index):
 							local[w] = 1
 				for w in local:
 					try:
-						total[w]['docs'][index] = local[w]
+						total[w]['docs'][index] += local[w]
 					except:
 						total[w] = {}
 						total[w]['docs'] = {index:local[w]}
