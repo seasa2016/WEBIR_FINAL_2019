@@ -63,20 +63,22 @@ def parse(text,vocab,total,index):
 total = {}
 vocab = {}
 mapping = []
-for name in os.listdir('./text/'):
+
+file_name = list(os.listdir('./text/'))
+for i,name in enumerate(file_name):
 	with open(os.path.join('./text/',name), 'r') as f:
-		for i,line in enumerate(f):
-			obj = json.loads(line)
-			mapping.append((obj['id'],obj['article_url']))
-			parse(obj['text'],vocab,total,i)
+		line =  f.readline()
+		obj = json.loads(line)
+		mapping.append((obj['id'],obj['article_url']))
+		parse(obj['text'],vocab,total,i)
 
 arr = [(key,data) for key,data in vocab.items()]
 arr = sorted(arr,key=lambda x:x[1],reverse=True)
-with open('./model/vocab') as f:
+with open('./model/vocab','w') as f:
 	for data in arr:
 		f.write("{0}\t{1}\n".format(data[0],data[1]))
 
-with open('./model/mapping') as f:
+with open('./model/mapping','w') as f:
 	for i,d in enumerate(mapping):
 		f.write("{0}\t{1}\t{2}\n".format(i,d[0],d[1]))
 
