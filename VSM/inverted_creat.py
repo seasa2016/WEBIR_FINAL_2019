@@ -51,9 +51,13 @@ def parse(text,vocab,total,index):
 	for w in text.split():
 		try:
 			total[w]['docs'][index] += 1
-		except:
-			total[w] = {}
-			total[w]['docs'] = {index:1}
+		except KeyError as e:
+			if(e.args[0]==w):
+				total[w] = {}
+				total[w]['docs'] = {index:1}
+			elif(e.args[0] == index):
+				total[w]['docs'][index] = 1
+
 
 		try:
 			vocab[w] += 1
