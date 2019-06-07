@@ -64,9 +64,9 @@ total = {}
 vocab = {}
 mapping = []
 
-file_name = list(os.listdir('./text/'))
+file_name = list(os.listdir('./../text/'))
 for i,name in enumerate(file_name):
-	with open(os.path.join('./text/',name), 'r') as f:
+	with open(os.path.join('./../text/',name), 'r') as f:
 		line =  f.readline()
 		obj = json.loads(line)
 		mapping.append((obj['id'],obj['article_url']))
