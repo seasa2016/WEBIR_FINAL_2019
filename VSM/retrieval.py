@@ -56,8 +56,9 @@ class VSM:
                 }
 		query_data = []
 		with open(query_file) as f:
-			for line in f:
-				qid,text = line.split('\t')
+			for qid in f:
+				with open('./input/{0}'.format(qid)) as f_in:
+					text = ' '.join(f_in.readlines()).split('\t')
 				total = {}
 
 				for punct in "/-'":
@@ -84,28 +85,26 @@ class VSM:
 				query_data.append((qid,total))
 		return query_data
 
+	def count(self,document_scores,query,file_list=None):
+		for (word, count) in query.items():
+			if word in self.invert_file:
+				query_tf = 1 + math.log(count,2)
+				
+				query_idf = self.invert_file[word]['idf']
+				doc_idf = self.invert_file[word]['idf']
+
+				for doc, doc_tf in self.invert_file[word]['docs'].items():
+					if(file_list is not None):
+						if(doc not in file_list):
+							continue
+
+					doc_tf = math.log(doc_tf,2) + 1
+					try:
+						document_scores[doc] += query_tf * query_idf * doc_tf * doc_idf
+					except:
+						document_scores[doc] = query_tf * query_idf * doc_tf * doc_idf
+
 	def find(self,query_file,num_retrieve=300):
-		def count(document_scores,query):
-			for (word, count) in query.items():
-				if word in self.invert_file:
-					#query_tf = 1
-					#query_tf = count
-					query_tf = 1 + math.log(count,2)
-					#query_tf = (k3+1)*count/(k3+count)
-					
-					query_idf = self.invert_file[word]['idf']
-					doc_idf = self.invert_file[word]['idf']
-					#doc_idf = 1
-
-					for doc, doc_tf in self.invert_file[word]['docs'].items():
-						doc_tf = math.log(doc_tf,2) + 1
-						#doc_tf = (k1+1)*doc_tf/( k1*((1-b) + b*(doc_length[doc]/l_avg)) + doc_tf)
-						try:
-							document_scores[doc] += query_tf * query_idf * doc_tf * doc_idf
-						except:
-							document_scores[doc] = query_tf * query_idf * doc_tf * doc_idf
-
-
 		querys = self.parsing(query_file)
 
 		final_ans = []
@@ -114,7 +113,7 @@ class VSM:
 		
 			# calculate scores by tf-idf
 			document_scores = dict() # record candidate document and its scores
-			count(document_scores,query)
+			self.count(document_scores,query)
 							
 			
 			# sort the document score pair by the score
@@ -127,13 +126,13 @@ class VSM:
 			if(args.feedback):
 				expand = {}
 				for doc_score_tuple in sorted_document_scores[:self.num]:
-					for word,count in self.doc_file[ doc_score_tuple[0] ].items():
+					for word,c in self.doc_file[ doc_score_tuple[0] ].items():
 						try:
-							expand[word] += count
+							expand[word] += c
 						except:
-							expand[word] = count
+							expand[word] = c
 
-				count(document_scores,expand)
+				self.count(document_scores,expand)
 
 				scores_temp = {}
 				for key in document_scores:

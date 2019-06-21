@@ -1,11 +1,17 @@
 import os
 import sys
 import json
+import glob
+
+database = True
+if(len(sys.argv)==3 and sys.argv=='query'):
+	database = False
 
 check = 'Extracted the following NER entity mentions:'
 
-filelist = list(os.listdir('./NER/'))
+filelist = glob.glob( '{0}/*.out'.format(sys.argv[1]))
 
+ners = []
 data = {}
 for filename in filelist:
 	count = set()
@@ -26,10 +32,20 @@ for filename in filelist:
 					count.add(ner)
 					i=i+1
 			i=i+1
+	ner_file.append(count)
 	base = filename.split('.')[0]
 	for line in count:
 		try:
 			data[line].append(base)
 		except:
 			data[line] = [ base ]
-json.dump(data,open('./ner_inverted.json','w'))
+
+if(database):
+	json.dump(data,open('./{0}/ner_inverted.json'.format(sys.argv[1]),'w'))
+else:
+	with open('./{0}/query'.format(sys.argv[1]),'w') as f:
+		for ner in ners:
+			f.write(' '.join(ner))
+			f.write('\n')
+			
+
