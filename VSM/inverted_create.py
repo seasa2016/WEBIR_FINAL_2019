@@ -75,7 +75,6 @@ for i,name in enumerate(file_name):
 		obj = json.loads(line)
 		mapping.append((obj['id'],obj['article_url']))
 		parse(obj['text'],vocab,total,i)
-
 arr = [(key,data) for key,data in vocab.items()]
 arr = sorted(arr,key=lambda x:x[1],reverse=True)
 with open('./model/vocab','w') as f:

@@ -56,7 +56,8 @@ class VSM:
                 }
 		query_data = []
 		with open(query_file) as f:
-			for qid,text in f:
+			for line in f:
+				qid,text = line.split('\t')
 				total = {}
 
 				for punct in "/-'":
@@ -108,7 +109,7 @@ class VSM:
 		querys = self.parsing(query_file)
 
 		final_ans = []
-		for (query_id, query) in querys:
+		for i,(query_id, query) in enumerate(querys):
 			print("query_id: {}".format(query_id))
 		
 			# calculate scores by tf-idf
@@ -161,7 +162,7 @@ class VSM:
 
 def main(args):
 	# do the initial
-	args.feedback=True
+	args.feedback=False
 	args.alpha =args.alpha/args.num/10
 
 	model = VSM(args)
@@ -170,11 +171,10 @@ def main(args):
 
 if(__name__ == "__main__"):
 	parser = ArgumentParser()
-	parser.add_argument("-i", "--inverted_file", default='./model/inverted_file.json', dest = "inverted_file", help = "Pass in a .json file.")
+	parser.add_argument("-i", "--inverted_file", default='./model/inverted_file_idf.json', dest = "inverted_file", help = "Pass in a .json file.")
 	parser.add_argument("-l", "--doc_length", default='./model/doc_length.json', dest = "doc_length", help = "Pass in a .json file.")
 	parser.add_argument("-d", "--doc_file", default='./model/document_file_log_tf.json', dest = "doc_file", help = "Pass in a .json file.")
-	parser.add_argument("-q", "--query_file", default='QS_1.csv', dest = "query_file", help = "Pass in a .csv file.")
-	parser.add_argument("-c", "--corpus_file", default='NC_1.csv', dest = "corpus_file", help = "Pass in a .csv file.")
+	parser.add_argument("-q", "--query_file", default='./train', dest = "query_file", help = "Pass in a .csv file.")
 	parser.add_argument("-o", "--output_file", default='sample_output.csv', dest = "output_file", help = "Pass in a .csv file.")
 	parser.add_argument("-k1", "--okapi_k1", default=15,type=float, dest = "k1", help = "parameter for okapi")
 	parser.add_argument("-k3", "--okapi_k3", default=15,type=float, dest = "k3", help = "parameter for okapi")
