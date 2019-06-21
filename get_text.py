@@ -7,20 +7,22 @@ def parse(obj,index):
 	for key in ['id','article_url','title','author']:
 		total[key] = obj[key]
 	total['text'] = []
+	if(total['title'] is not None):
+		total['text'] = [total['title']]
+
 	try:
 		for data in obj['contents']:
 			if(data is None):
 				continue
 			if('subtype' in data):
-				data['content'] = data['content'].lower()
-			
+				
 				soup = BeautifulSoup(data['content'], 'html.parser')
 				total['text'].append(soup.text)
 	except Exception as e:
 		print(index,obj)
 		print(e)
-	
-	total['text'] = '\n'.join(total['text'])
+		
+	total['text'] = ' \n '.join(total['text'])
 	with open('./text/{0}.json'.format(obj['id']),'w') as f:
 		f.write(json.dumps(total))
 

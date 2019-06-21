@@ -8,6 +8,7 @@ with open(sys.argv[1]) as f:
 
 data = json.loads(line)
 length = {}
+total = {}
 
 for i,key in enumerate(data):
 	for doc,doc_tf in data[key]['docs'].items():
@@ -15,6 +16,15 @@ for i,key in enumerate(data):
 			length[doc] += doc_tf
 		except:
 			length[doc] = doc_tf
+
+		if(doc in total):
+			total[doc][key] = doc_tf
+		else:
+			total[doc] = {}
+			total[doc][key] = doc_tf
+
+with open('./model/document_file_log_tf.json','w') as f:
+	f.write(json.dumps(total))
 		
 total = 0
 for doc in length:
