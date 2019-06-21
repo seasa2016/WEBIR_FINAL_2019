@@ -83,7 +83,7 @@ class VSM:
 				query_data.append((qid,total))
 		return query_data
 
-	def find(self,query_file):
+	def find(self,query_file,num_retrieve=300):
 		def count(document_scores,query):
 			for (word, count) in query.items():
 				if word in self.invert_file:
@@ -140,12 +140,12 @@ class VSM:
 				sorted_document_scores = sorted(scores_temp.items(), key=operator.itemgetter(1), reverse=True)
 
 			# record the answer of this query to final_ans
-			if len(sorted_document_scores) >= 300:
-				final_ans.append([doc_score_tuple[0] for doc_score_tuple in sorted_document_scores[:300]])
+			if(len(sorted_document_scores) >= num_retrieve):
+				final_ans.append([doc_score_tuple[0] for doc_score_tuple in sorted_document_scores[:num_retrieve]])
 			else: # if candidate documents less than 300, random sample some documents that are not in candidate list
 				documents_set  = set([doc_score_tuple[0] for doc_score_tuple in sorted_document_scores])
-				sample_pool = ['news_%06d'%news_id for news_id in range(1, 300) if 'news_%06d'%news_id not in documents_set]
-				sample_ans = random.sample(sample_pool, 300-count)
+				sample_pool = ['news_%06d'%news_id for news_id in range(1, num_retrieve) if 'news_%06d'%news_id not in documents_set]
+				sample_ans = random.sample(sample_pool, num_retrieve-count)
 				sorted_document_scores.extend(sample_ans)
 				final_ans.append([doc_score_tuple[0] for doc_score_tuple in sorted_document_scores])
 		return final_ans
