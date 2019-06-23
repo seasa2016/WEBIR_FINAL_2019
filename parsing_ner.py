@@ -15,7 +15,7 @@ ners = []
 data = {}
 for filename in filelist:
 	count = set()
-	with open('./NER/{0}'.format(filename)) as f:
+	with open(filename) as f:
 		lines = f.readlines()
 		i=0
 		while(i < len(lines)):
@@ -32,20 +32,19 @@ for filename in filelist:
 					count.add(ner)
 					i=i+1
 			i=i+1
-	ner_file.append(count)
-	base = filename.split('.')[0]
+	ners.append(count)
+	base = filename.split('.')[0].split('/')[-1]
 	for line in count:
 		try:
 			data[line].append(base)
 		except:
 			data[line] = [ base ]
-
 if(database):
 	json.dump(data,open('./{0}/ner_inverted.json'.format(sys.argv[1]),'w'))
 else:
 	with open('./{0}/query'.format(sys.argv[1]),'w') as f:
 		for ner in ners:
-			f.write(' '.join(ner))
+			f.write('\t'.join(ner))
 			f.write('\n')
 			
 

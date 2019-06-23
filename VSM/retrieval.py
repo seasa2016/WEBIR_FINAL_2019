@@ -80,8 +80,8 @@ class VSM:
 		if(query_list is not None):
 			with open(query_list) as f:
 				for qid in f:
-					with open('./input/{0}'.format(qid)) as f_in:
-						text = ' '.join(f_in.readlines()).split('\t')
+					with open(qid.strip()) as f_in:
+						text = ' '.join(f_in.readlines())
 					
 					total = {}		
 					for w in preprocess(text).split():
@@ -146,7 +146,7 @@ class VSM:
 			sorted_document_scores = sorted(scores_temp.items(), key=operator.itemgetter(1), reverse=True)
 			
 			#do the feedback here
-			if(args.feedback):
+			if(self.feedback):
 				expand = {}
 				for doc_score_tuple in sorted_document_scores[:self.num]:
 					for word,c in self.doc_file[ doc_score_tuple[0] ].items():

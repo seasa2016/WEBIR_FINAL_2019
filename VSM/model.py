@@ -2,11 +2,7 @@ import json
 import math
 import sys
 
-with open(sys.argv[1]) as f:
-	for line in f:
-		pass
-
-data = json.loads(line)
+data = json.load(open(sys.argv[1]))
 length = {}
 total = {}
 

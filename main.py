@@ -5,11 +5,17 @@ from argparse import ArgumentParser
 
 
 def main(args):
-    vsm_model = VSM(args)
-    model = GRAPH(args,vsm_model)
+	print('build vsm model')
+	vsm_model = VSM(args)
+	print('build graph model')
+	model = GRAPH(args,vsm_model)
 
-    model.rank(args.query_dir)
-
+	print('do ranking')
+	outs = model.rank(args.query_file)
+	
+	with open(args.output_file,'w') as f:
+		for out in outs:
+			f.write("{0}\t{1}\n".format(out[0],out[1]))
 
 if(__name__ == "__main__"):
 	parser = ArgumentParser()
@@ -26,4 +32,8 @@ if(__name__ == "__main__"):
 
     
 	args = parser.parse_args()
+	args.feedback = False
+	args.alpha = 0.8
+	args.num = 10
+
 	main(args)

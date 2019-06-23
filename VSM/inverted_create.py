@@ -32,7 +32,7 @@ mispell_dict = {'didnt':'did not',
 
 def parse(text,vocab,total,index):
 	#build up inverted file
-
+	text = text.lower()
 	for punct in "/-'":
 		text = text.replace(punct, '')
 	for punct in '?!.,"#$%\'()*+-/:;<=>@[\\]^_`{|}~' + '“”’‘':
@@ -74,7 +74,10 @@ for i,name in enumerate(file_name):
 		line =  f.readline()
 		obj = json.loads(line)
 		mapping.append((obj['id'],obj['article_url']))
-		parse(obj['text'],vocab,total,i)
+		if(obj['title'] is None):
+			obj['title'] =''
+		parse(obj['title']+' '+obj['text'],vocab,total,i)
+
 arr = [(key,data) for key,data in vocab.items()]
 arr = sorted(arr,key=lambda x:x[1],reverse=True)
 with open('./model/vocab','w') as f:
