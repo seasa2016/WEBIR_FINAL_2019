@@ -4,7 +4,7 @@ import json
 import glob
 
 database = True
-if(len(sys.argv)==3 and sys.argv=='query'):
+if(len(sys.argv)==3 and sys.argv[2]=='query'):
 	database = False
 
 check = 'Extracted the following NER entity mentions:'
