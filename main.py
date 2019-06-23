@@ -5,10 +5,10 @@ from argparse import ArgumentParser
 
 
 def main(args):
-    vsm_model = VSM(args)
-    model = GRAPH(args,vsm_model)
+	vsm_model = VSM(args)
+	model = GRAPH(args,vsm_model)
 
-    model.rank(args.query_dir)
+	model.rank(args.query_dir)
 
 
 if(__name__ == "__main__"):
@@ -23,6 +23,7 @@ if(__name__ == "__main__"):
 
     #parameter for graph model
 	parser.add_argument("-n", "--ner_file", default='./ner_inverted.json', dest = "ner_inverted", help = "Pass in a .json file.")
+	parser.add_argument("-i", "--mapping_file", default='./VSM/model/mapping', dest = "mapping", help = "Pass in a .json file.")
 
     
 	args = parser.parse_args()
