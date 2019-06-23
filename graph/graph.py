@@ -7,10 +7,8 @@ class GRAPH:
     def __init__(self,config,model):
         self.model = model
         self.config = config
-
-        self.input_dir = config.input_dir
         
-
+        self.init()
     def init(self):
         # create inverted file for the name entity
         self.ner_inverted = json.load(open(self.config.ner_inverted))
@@ -23,20 +21,16 @@ class GRAPH:
                 ners.append(line)
         return ners
 
-    def rank(self,query_dir):
+    def rank(self,input_dir):
         #check the name entity
-        querys = self.model.parsing( os.path.join(self.input_dir,'input_file') )
-        ners = self.parsing_ner( os.path.join(self.input_dir,'query') )
+        similarity_scores = self.model.find( query_list=os.path.join(input_dir,'input_file'), num_retrieve=0 )
+        ners = self.parsing_ner( os.path.join(input_dir,'query') )
 
         rank = []
-
-        for i,(ner, query) in enumerate(zip(ners,querys)):
-            qid, text = query
+        for i,(ner, query) in enumerate(zip(ners,similarity_scores)):
+            qid, text_score = query
             ner_score = {}
-            text_score = {}
-            
-            self.model.count(text_score, text)
-            
+                        
             for n in ner:
                 if(n in self.ner_inverted):
                     ner_score[n] = 0
@@ -44,6 +38,6 @@ class GRAPH:
                         ner_score[n] += text_score[text_id]
                     ner_score[n] /= len(self.ner_inverted[n])
             # rank n
-            rank.append( (n, sorted(ner_score.items(),key=operator.itemgetter(1), reverse=True) ))
+            rank.append( (qid, sorted(ner_score.items(),key=operator.itemgetter(1), reverse=True) ))
 
         return rank     

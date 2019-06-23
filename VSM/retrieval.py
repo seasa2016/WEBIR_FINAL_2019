@@ -13,9 +13,11 @@ class VSM:
 		# initial argument
 
 		#for okapi
+		"""
 		self.k1 = args.k1
 		self.k3 = args.k3
 		self.b = args.b
+		"""
 		#for tfidf
 		self.feedback = args.feedback
 		self.alpha = args.alpha
@@ -44,7 +46,24 @@ class VSM:
 
 
 
-	def parsing(self,query_file):
+	def parsing(self,query_file=None, query_list=None):
+		def preprocess(text):
+			for punct in "/-'":
+				text = text.replace(punct, '')
+			for punct in '?!.,"#$%\'()*+-/:;<=>@[\\]^_`{|}~' + '“”’‘':
+				text = text.replace(punct, '')
+			"""
+			if you want to parse number
+			text = str(key)
+			text = re.sub('[0-9]{5,}', '#####', text)
+			text = re.sub('[0-9]{4}', '####', text)
+			text = re.sub('[0-9]{3}', '###', text)
+			text = re.sub('[0-9]{2}', '##', text)
+			"""
+			for key,data in mispell_dict.items():
+				text = text.replace(key,data)
+			return text
+
 		mispell_dict = {'didnt':'did not','doesnt':'does not',
                 'isnt':'is not','shouldnt':'should not' ,
                 'wasnt': 'was not' ,'hasnt': 'has not' ,
@@ -54,35 +73,38 @@ class VSM:
                 'marylands': 'maryland' ,'chinas': 'china' ,'russias': 'russia' ,
                 '‘the': 'the' ,'irans': 'iran','dulles': 'dulle' 
                 }
+		
+
 		query_data = []
-		with open(query_file) as f:
-			for qid in f:
-				with open('./input/{0}'.format(qid)) as f_in:
-					text = ' '.join(f_in.readlines()).split('\t')
-				total = {}
+		
+		if(query_list is not None):
+			with open(query_list) as f:
+				for qid in f:
+					with open('./input/{0}'.format(qid)) as f_in:
+						text = ' '.join(f_in.readlines()).split('\t')
+					
+					total = {}		
+					for w in preprocess(text).split():
+						try:
+							total[w] += 1
+						except:
+							total[w] = 1
 
-				for punct in "/-'":
-					text = text.replace(punct, '')
-				for punct in '?!.,"#$%\'()*+-/:;<=>@[\\]^_`{|}~' + '“”’‘':
-					text = text.replace(punct, '')
-				"""
-				if you want to parse number
-				text = str(key)
-				text = re.sub('[0-9]{5,}', '#####', text)
-				text = re.sub('[0-9]{4}', '####', text)
-				text = re.sub('[0-9]{3}', '###', text)
-				text = re.sub('[0-9]{2}', '##', text)
-				"""
-				for key,data in mispell_dict.items():
-					text = text.replace(key,data)
-				
-				for w in text.split():
-					try:
-						total[w] += 1
-					except:
-						total[w] = 1
+					query_data.append((qid,total))
+		elif(query_file is not None):
+			with open(query_file) as f:
+				for line in f:
+					qid,text = line.strip().split()
+					
+					total = {}		
+					for w in preprocess(text).split():
+						try:
+							total[w] += 1
+						except:
+							total[w] = 1
 
-				query_data.append((qid,total))
+					query_data.append((qid,total))
+
 		return query_data
 
 	def count(self,document_scores,query,file_list=None):
@@ -104,8 +126,8 @@ class VSM:
 					except:
 						document_scores[doc] = query_tf * query_idf * doc_tf * doc_idf
 
-	def find(self,query_file,num_retrieve=300):
-		querys = self.parsing(query_file)
+	def find(self,query_file=None,query_list=None,num_retrieve=0):
+		querys = self.parsing(query_file=query_file, query_list=query_list)
 
 		final_ans = []
 		for i,(query_id, query) in enumerate(querys):
@@ -120,6 +142,7 @@ class VSM:
 			scores_temp = {}
 			for key in document_scores:
 				scores_temp[key] = document_scores[key] / math.sqrt(self.total[key])
+			
 			sorted_document_scores = sorted(scores_temp.items(), key=operator.itemgetter(1), reverse=True)
 			
 			#do the feedback here
@@ -140,14 +163,19 @@ class VSM:
 				sorted_document_scores = sorted(scores_temp.items(), key=operator.itemgetter(1), reverse=True)
 
 			# record the answer of this query to final_ans
-			if(len(sorted_document_scores) >= num_retrieve):
+			if(num_retrieve==0):
+				final_ans.append((query_id,scores_temp))
+
+			elif(len(sorted_document_scores) >= num_retrieve):
 				final_ans.append([doc_score_tuple[0] for doc_score_tuple in sorted_document_scores[:num_retrieve]])
+
 			else: # if candidate documents less than 300, random sample some documents that are not in candidate list
 				documents_set  = set([doc_score_tuple[0] for doc_score_tuple in sorted_document_scores])
 				sample_pool = ['news_%06d'%news_id for news_id in range(1, num_retrieve) if 'news_%06d'%news_id not in documents_set]
-				sample_ans = random.sample(sample_pool, num_retrieve-count)
+				sample_ans = random.sample(sample_pool, num_retrieve-len(sorted_document_scores))
 				sorted_document_scores.extend(sample_ans)
 				final_ans.append([doc_score_tuple[0] for doc_score_tuple in sorted_document_scores])
+		
 		return final_ans
 
 	def output(self,output_file,final_ans):
