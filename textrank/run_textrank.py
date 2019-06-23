@@ -63,7 +63,7 @@ for f_in in in_files:
     path_stage0 = f_in
     doc_id = f_in.split('/')[1]
     doc_id = doc_id.split('.')[0]
-    #path_stage2 = 'result_input/'+str(doc_id)+'.txt'
+    #path_stage2 = 'result/'+str(doc_id)+'.txt'
     path_stage2 = 'o2.json'
     print(doc_id)
 
@@ -73,7 +73,7 @@ for f_in in in_files:
     ent_score = _rank_entities(entities, result_dict, entity_idf)
 
     df = pd.DataFrame(ent_score)
-    df.to_csv('result_input/'+str(doc_id)+'.txt', header=None)
+    df.to_csv('result/'+str(doc_id)+'.txt', header=None)
 
 print ('time: ', time.time()-start)
 
