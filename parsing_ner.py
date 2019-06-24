@@ -48,3 +48,17 @@ else:
 			f.write('\n')
 			
 
+# Get inverse doc freq. of entities
+import numpy as np
+
+ner_inverted = json.load(open('ner_inverted.json'))
+entities = list(ner_inverted.keys())
+
+ent_len = dict()
+N = 595000   # number of docs in the collection
+for ent in entities:
+	_df = len(ner_inverted[ent])
+	ent_len[ent] = np.log10( N/_df)
+	
+with open('entity_idf.json', 'w') as json_file: 
+	json.dump(ent_len, json_file)
